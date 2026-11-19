@@ -6,7 +6,7 @@
 
 ![python](https://img.shields.io/badge/python-3.10%20%7C%203.12-blue) ![mcp](https://img.shields.io/badge/MCP-4%20servers-informational) ![tests](https://img.shields.io/badge/tests-26%20passing-brightgreen) ![react](https://img.shields.io/badge/dashboard-React%20%2B%20TypeScript-informational) ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
-![Agora dashboard: leaderboard, equity curves, trader panel, order tickets and the agent's latest session](docs/dashboard.png)
+![Agora walkthrough: trading days advance, the leaderboard reorders as equity curves move, then one trader's positions, tickets and notebook are opened](docs/demo.gif)
 
 </div>
 
