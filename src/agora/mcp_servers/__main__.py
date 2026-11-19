@@ -23,6 +23,10 @@ def main() -> None:
     db = DB(a.db or s.db_path)
     if a.server in ("accounts", "memory") and not a.trader:
         p.error(f"--trader is required for the {a.server} server")
+    if a.server == "accounts" and not db.one("SELECT 1 FROM accounts WHERE trader_id=?", (a.trader,)):
+        from ..ledger import Ledger
+
+        Ledger(db).open_account(a.trader, a.trader.title(), "human", s.starting_cash)  # e.g. a guest trading via Claude
     server = {
         "accounts": lambda: accounts_server(db, a.trader, RiskPolicy.from_settings(s)),
         "market": lambda: market_server(db),
