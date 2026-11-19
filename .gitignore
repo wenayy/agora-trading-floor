@@ -12,3 +12,4 @@ results/
 node_modules/
 web/dist/
 web/dist-demo/
+*.tsbuildinfo
