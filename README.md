@@ -117,10 +117,15 @@ The design treats the floor like an exchange's paper trail rather than a crypto 
 - **Palette:** cool ink neutrals with one cobalt accent for the selected trader and the primary action. Green and red appear only on gains and losses.
 - **Order tickets** are the signature detail: a perforated edge, a Buy, Sell or Rejected stamp, and the agent's own rationale.
 - **The equity chart** is drawn by hand in SVG. It labels each line directly instead of using a legend, has a crosshair tooltip, and drawing order keeps the selected trader on top.
+- **Trace tab:** a waterfall of every span in the agent's last session (model turns, MCP tool calls, the research sub-agent), with duration, turns, tokens and cost.
+- **Built on Radix primitives** (Tabs, Switch, Tooltip), the accessible base layer that shadcn/ui and 21st.dev components use, styled with the dashboard's own tokens. **Motion** animates leaderboard rank changes and tweens figures when a day completes.
 - **Live updates** arrive over SSE, which tails the event log, so progress shows as it happens ("Kite is placing orders").
 - **Quality floor:** responsive down to phone width, visible keyboard focus, `prefers-reduced-motion` respected, tabular figures everywhere.
 
-<img src="docs/tickets.png" width="560" alt="Order tickets with Buy and Sell stamps and the agent's rationale">
+<p>
+<img src="docs/tickets.png" width="520" alt="Order tickets with Buy and Sell stamps and the agent's rationale">
+<img src="docs/trace.png" width="300" alt="Trace waterfall of one trader session">
+</p>
 
 ## Project layout
 
@@ -133,7 +138,7 @@ src/agora/
   market/sim.py  seeded factor-model simulator with generated news
   metrics.py     return, volatility, Sharpe, drawdown, turnover, benchmark
   api/server.py  FastAPI, SSE event stream, autopilot, static hosting
-web/             React + TypeScript + Vite dashboard (no chart library; SVG by hand)
+web/             React + TypeScript + Vite dashboard: Radix primitives, Motion, hand-drawn SVG chart
 tests/           26 tests: ledger and risk, MCP servers (incl. a real stdio subprocess), agent branches, API
 ```
 
