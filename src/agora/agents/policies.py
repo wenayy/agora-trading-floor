@@ -172,7 +172,8 @@ class PolicyBrain:
         trades = [f"{n.split('_')[0]} {a['quantity']} {a['symbol']}" for n, a in made if n in ("buy_shares", "sell_shares")]
         if not trades:
             return f"No trades: the book already matches my {self.strategy} targets."
-        return f"Executed {len(trades)} orders ({'; '.join(trades)}) to move toward {self._note(targets)}."
+        n = len(trades)
+        return f"Executed {n} order{'s' if n != 1 else ''} ({'; '.join(trades)}) to move toward {self._note(targets)}."
 
 
 class PolicyResearcher:
