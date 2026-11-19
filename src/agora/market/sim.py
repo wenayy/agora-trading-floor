@@ -142,7 +142,7 @@ def snapshot(db: DB) -> list[dict]:
             continue
         last = h[-1]
 
-        def ret(n: int) -> float | None:
+        def ret(n: int, h: list[float] = h, last: float = last) -> float | None:
             return round(last / h[-1 - n] - 1, 4) if len(h) > n else None
 
         rets = [math.log(h[i] / h[i - 1]) for i in range(1, len(h))]
