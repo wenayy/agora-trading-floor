@@ -35,11 +35,16 @@ def main() -> None:
 
     asyncio.run(go())
     OUT.mkdir(parents=True, exist_ok=True)
+    for old in OUT.glob("*.json"):  # trace ids change between runs
+        old.unlink()
     with TestClient(create_app(floor=floor)) as c:
         files = {"floor": "/api/floor", "equity": "/api/equity", "metrics": "/api/metrics", "market": "/api/market"}
         for t in floor.traders:
             files[f"traders_{t.id}"] = f"/api/traders/{t.id}"
             files[f"events_{t.id}"] = f"/api/events?latest=true&limit=400&trader_id={t.id}"
+        for t in floor.traders:  # the trace of each trader's most recent session
+            tid = c.get(f"/api/traders/{t.id}").json()["sessions"][0]["trace_id"]
+            files[f"traces_{tid}"] = f"/api/traces/{tid}"
         for name, url in files.items():
             (OUT / f"{name}.json").write_text(json.dumps(c.get(url).json(), separators=(",", ":")))
     print(f"wrote {len(files)} files to {OUT}")

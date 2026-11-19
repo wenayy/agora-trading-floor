@@ -91,7 +91,8 @@ async def run_agent(brain: Brain, system: str, task: str, belt: ToolBelt, *, max
     tools = belt.openai_tools()
     with span(f"agent.{name}") as s:
         for turn in range(1, max_turns + 1):
-            reply = await asyncio.to_thread(brain.respond, messages, tools)
+            with span("model.turn", model=brain.model, turn=turn):
+                reply = await asyncio.to_thread(brain.respond, messages, tools)
             messages.append(_assistant_message(reply.content, reply.tool_calls))
             if reply.content and reply.tool_calls:
                 emit("thought", {"agent": name, "text": reply.content})

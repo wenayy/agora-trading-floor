@@ -34,9 +34,11 @@ class Span:
     def set(self, **attrs: Any) -> None:
         self.attrs.update(attrs)
 
-    def to_dict(self) -> dict:
-        return {"name": self.name, "duration_ms": round(self.duration_ms, 2), "attrs": self.attrs,
-                "children": [c.to_dict() for c in self.children]}
+    def to_dict(self, origin: float | None = None) -> dict:
+        origin = self.start if origin is None else origin
+        return {"name": self.name, "offset_ms": round((self.start - origin) * 1000, 2),
+                "duration_ms": round(self.duration_ms, 2), "attrs": self.attrs,
+                "children": [c.to_dict(origin) for c in self.children]}
 
 
 @dataclass
