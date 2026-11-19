@@ -270,3 +270,50 @@ table.market { width: 100%; border-collapse: collapse; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+/* ---------------------------------------------------------------- primitives (Radix) */
+.hint { border-bottom: 1px dotted var(--line-strong); cursor: help; }
+.hint-content {
+  max-width: 260px;
+  background: var(--text);
+  color: #f5f7fa;
+  font-size: 12px;
+  line-height: 16px;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
+  z-index: 50;
+  animation: hint-in 160ms var(--ease);
+}
+.hint-arrow { fill: var(--text); }
+@keyframes hint-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.toggle { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; cursor: pointer; color: var(--text-2); }
+.toggle.disabled { opacity: 0.5; cursor: not-allowed; }
+.switch { width: 32px; height: 20px; border-radius: 10px; border: 0; padding: 0; background: var(--series); position: relative; cursor: inherit; transition: background-color 150ms var(--ease); }
+.switch[data-state="checked"] { background: var(--accent); }
+.switch-thumb { display: block; width: 16px; height: 16px; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px rgba(17, 24, 39, 0.2); transform: translateX(2px); transition: transform 150ms var(--ease); }
+.switch[data-state="checked"] .switch-thumb { transform: translateX(14px); }
+
+.panel.tabs { padding-top: 4px; }
+.tab-list { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--line); margin: 0 -20px 16px; padding: 0 16px; }
+.tab { border: 0; background: transparent; height: 36px; padding: 0 8px; color: var(--muted); font-weight: 500; cursor: pointer; box-shadow: inset 0 -2px 0 transparent; transition: color 150ms var(--ease), box-shadow 150ms var(--ease); }
+.tab:hover { color: var(--text-2); }
+.tab[data-state="active"] { color: var(--text); box-shadow: inset 0 -2px 0 var(--accent); }
+.tab-meta { margin-left: auto; }
+.tab-panel:focus-visible { outline-offset: 4px; }
+
+.notes { display: flex; flex-direction: column; gap: 12px; }
+.note-head { display: flex; justify-content: space-between; margin-bottom: 4px; }
+
+/* ---------------------------------------------------------------- trace waterfall */
+.trace-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-bottom: 16px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+.trace-summary dd { margin-top: 4px; font-weight: 500; }
+.waterfall { display: flex; flex-direction: column; max-height: 420px; overflow-y: auto; margin-bottom: 12px; }
+.waterfall li { display: grid; grid-template-columns: minmax(0, 150px) 1fr 52px; gap: 8px; align-items: center; height: 24px; font-size: 12px; }
+.wf-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
+.is-tool .wf-name { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: var(--muted); }
+.wf-track { position: relative; height: 8px; background: var(--page); border-radius: 2px; }
+.wf-bar { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: var(--series); }
+.is-llm .wf-bar { background: var(--accent); }
+.wf-ms { text-align: right; color: var(--muted); }

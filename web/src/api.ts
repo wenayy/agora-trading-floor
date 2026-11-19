@@ -114,6 +114,21 @@ export interface Metric {
   days: number;
 }
 
+export interface TraceSpan {
+  name: string;
+  offset_ms: number;
+  duration_ms: number;
+  attrs: Record<string, unknown>;
+  children: TraceSpan[];
+}
+
+export interface Trace {
+  id: string;
+  name: string;
+  usage: { prompt_tokens: number; completion_tokens: number; llm_calls: number; cost_usd: number };
+  root: TraceSpan;
+}
+
 export interface FloorEvent {
   id: number;
   trading_day: number;
@@ -138,6 +153,7 @@ export const api = {
   metrics: () => get<Record<string, Metric>>("/api/metrics"),
   events: (traderId: string) =>
     get<FloorEvent[]>(`/api/events?latest=true&limit=400&trader_id=${traderId}`, `events_${traderId}`),
+  trace: (id: string) => get<Trace>(`/api/traces/${id}`),
   runDay: async () => {
     const r = await fetch("/api/cycle", { method: "POST" });
     if (!r.ok && r.status !== 409) throw new Error(`Could not start the trading day (${r.status})`);

@@ -1,11 +1,15 @@
-import { Pause, Play, StepForward } from "lucide-react";
+import * as Tabs from "@radix-ui/react-tabs";
+import { StepForward } from "lucide-react";
+import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, DEMO, type EquityView, type FloorEvent, type FloorView, type Metric, type Security, type TraderDetail } from "./api";
 import { Activity } from "./components/Activity";
 import { EquityChart } from "./components/EquityChart";
 import { MarketTable } from "./components/MarketTable";
 import { rejectedOrders, Tickets } from "./components/Tickets";
+import { TraceView } from "./components/TraceView";
 import { TraderPanel } from "./components/TraderPanel";
+import { AnimatedNumber, Hint, HintProvider, Toggle } from "./components/ui";
 import { fmtMoney, fmtPct, STRATEGY_LABEL, tone } from "./format";
 
 const LIVE_KINDS = new Set(["session_start", "tool_call", "tool_error", "thought", "research_request", "research_brief", "session_end"]);
@@ -80,9 +84,8 @@ export default function App() {
     setStatus("Opening the next trading day");
     try { await api.runDay(); } catch (e) { setError(String(e)); setStatus(""); }
   };
-  const toggleAuto = async () => {
-    if (!floor) return;
-    await api.autopilot(!floor.autopilot.enabled);
+  const toggleAuto = async (on: boolean) => {
+    await api.autopilot(on);
     loadFloor();
   };
 
@@ -91,6 +94,7 @@ export default function App() {
   }
 
   return (
+    <HintProvider>
     <div className="shell">
       <aside className="sidebar">
         <div className="side-inner">
@@ -102,7 +106,7 @@ export default function App() {
         <h2 className="side-label" id="board-label">Leaderboard</h2>
         <ul className="board" aria-labelledby="board-label">
           {ranked.map((t, i) => (
-            <li key={t.id}>
+            <motion.li key={t.id} layout transition={{ type: "tween", duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
               <button className={`board-row ${t.id === selected ? "active" : ""}`} onClick={() => setSelected(t.id)}
                 aria-current={t.id === selected}>
                 <span className="rank num">{i + 1}</span>
@@ -111,11 +115,11 @@ export default function App() {
                   <span className="muted small">{STRATEGY_LABEL[t.strategy] ?? t.strategy}</span>
                 </span>
                 <span className="val">
-                  <span className="num">{fmtMoney(t.equity)}</span>
+                  <span className="num"><AnimatedNumber value={t.equity} format={fmtMoney} /></span>
                   <span className={`num small ${tone(t.return_pct)}`}>{fmtPct(t.return_pct)}</span>
                 </span>
               </button>
-            </li>
+            </motion.li>
           ))}
           <li className="board-row bench">
             <span className="rank" />
@@ -130,7 +134,7 @@ export default function App() {
         <div className="side-foot">
           <p><span className="muted">Brain</span> {floor.brain === "llm" ? floor.model : "Rule-based policies"}</p>
           <p><span className="muted">MCP transport</span> {floor.transport === "stdio" ? "Separate processes" : "In-process"}</p>
-          <p><span className="muted">Risk limits</span> {Math.round(floor.limits.max_position_pct * 100)}% per position,{" "}
+          <p><Hint text="Enforced inside the accounts MCP server. Agents can only request orders; the ledger decides."><span className="muted">Risk limits</span></Hint> {Math.round(floor.limits.max_position_pct * 100)}% per position,{" "}
             {Math.round(floor.limits.max_order_pct * 100)}% per order, {floor.limits.max_trades_per_cycle} trades a day</p>
         </div>
         </div>
@@ -146,11 +150,8 @@ export default function App() {
             </p>
           </div>
           <div className="actions">
-            <button className="btn secondary" onClick={toggleAuto} disabled={DEMO}
-              title={DEMO ? "Available when running locally" : undefined}>
-              {floor.autopilot.enabled ? <Pause size={16} strokeWidth={1.5} /> : <Play size={16} strokeWidth={1.5} />}
-              {floor.autopilot.enabled ? "Pause autopilot" : "Autopilot"}
-            </button>
+            <Toggle checked={floor.autopilot.enabled} onChange={toggleAuto} disabled={DEMO}
+              label={floor.autopilot.enabled ? `Autopilot, every ${floor.autopilot.interval_s}s` : "Autopilot"} />
             <button className="btn primary" onClick={runDay} disabled={DEMO || running}
               title={DEMO ? "Available when running locally" : undefined}>
               <StepForward size={16} strokeWidth={1.5} />
@@ -182,18 +183,27 @@ export default function App() {
           <div className="col">
           {detail && <TraderPanel t={detail} metric={metrics[selected]} benchmark={floor.benchmark_return} />}
 
-          <section className="panel" aria-labelledby="activity-title">
-            <div className="panel-head">
-              <h2 id="activity-title">Latest session</h2>
-              {detail?.sessions[0] && (
-                <span className="muted small num">
-                  {detail.sessions[0].turns} turns, {detail.sessions[0].ms} ms
-                  {detail.sessions[0].cost_usd ? `, $${detail.sessions[0].cost_usd.toFixed(4)}` : ""}
-                </span>
-              )}
-            </div>
-            <Activity events={events} live={running} />
-          </section>
+          <Tabs.Root className="panel tabs" defaultValue="session">
+            <Tabs.List className="tab-list" aria-label="Inspect this trader">
+              <Tabs.Trigger value="session" className="tab">Latest session</Tabs.Trigger>
+              <Tabs.Trigger value="notebook" className="tab">Notebook</Tabs.Trigger>
+              <Tabs.Trigger value="trace" className="tab">Trace</Tabs.Trigger>
+            </Tabs.List>
+            <Tabs.Content value="session" className="tab-panel"><Activity events={events} live={running} /></Tabs.Content>
+            <Tabs.Content value="notebook" className="tab-panel">
+              {detail?.notes.length ? (
+                <ul className="notes">
+                  {detail.notes.map((n) => (
+                    <li key={n.key}>
+                      <div className="note-head"><code className="tool">{n.key}</code></div>
+                      <p className="note">{n.value}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="empty">Notes the agent writes with the memory server's remember tool appear here.</p>}
+            </Tabs.Content>
+            <Tabs.Content value="trace" className="tab-panel"><TraceView traceId={detail?.sessions[0]?.trace_id} /></Tabs.Content>
+          </Tabs.Root>
           </div>
 
           <section className="panel wide" aria-labelledby="market-title">
@@ -206,5 +216,6 @@ export default function App() {
         </div>
       </main>
     </div>
+    </HintProvider>
   );
 }
