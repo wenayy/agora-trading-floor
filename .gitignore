@@ -11,3 +11,4 @@ results/
 .ruff_cache/
 node_modules/
 web/dist/
+web/dist-demo/
