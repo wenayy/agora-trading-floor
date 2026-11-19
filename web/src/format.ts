@@ -9,7 +9,10 @@ export const fmtPct = (v: number | null | undefined, digits = 1) => {
   return `${r > 0 ? "+" : r < 0 ? "−" : ""}${Math.abs(r).toFixed(digits)}%`;
 };
 export const fmtWeight = (v: number) => `${(v * 100).toFixed(0)}%`;
-export const tone = (v: number | null | undefined) => (v == null || v === 0 ? "" : v > 0 ? "up" : "down");
+export const tone = (v: number | null | undefined, digits = 1) => {
+  const r = v == null ? 0 : Number((v * 100).toFixed(digits)); // colour what is shown, not the raw value
+  return r === 0 ? "" : r > 0 ? "up" : "down";
+};
 
 export const STRATEGY_LABEL: Record<string, string> = {
   value: "Value",

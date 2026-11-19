@@ -47,9 +47,10 @@ export function EquityChart({ data, names, selected, onSelect, startingCash = 10
   const maxDay = Math.max(1, ...all.map((p) => p.day));
   const lo = Math.min(0, ...all.map((p) => p.r));
   const hi = Math.max(0, ...all.map((p) => p.r));
-  const padY = (hi - lo || 0.02) * 0.12;
-  const y0 = lo - padY;
-  const y1 = hi + padY;
+  const span = Math.max(hi - lo, 0.02); // never zoom in tighter than a 2% range
+  const mid = (hi + lo) / 2;
+  const y0 = Math.min(lo, mid - span / 2) - span * 0.12;
+  const y1 = Math.max(hi, mid + span / 2) + span * 0.12;
   const iw = width - PAD.left - PAD.right;
   const ih = H - PAD.top - PAD.bottom;
   const x = (d: number) => PAD.left + (d / maxDay) * iw;
@@ -67,6 +68,7 @@ export function EquityChart({ data, names, selected, onSelect, startingCash = 10
   for (let i = 1; i < labels.length; i++) labels[i].py = Math.max(labels[i].py, labels[i - 1].py + 16);
 
   const yTicks = niceTicks(y0, y1);
+  const tickDigits = yTicks.length > 1 && yTicks[1] - yTicks[0] < 0.01 ? 1 : 0;
   const xTicks = niceTicks(0, maxDay, Math.max(2, Math.min(8, maxDay, Math.floor(iw / 72)))).filter((d) => Number.isInteger(d));
   const ordered = [...series.traders].sort((a) => (a.id === selected ? 1 : -1)); // selected drawn last, on top
 
@@ -84,7 +86,7 @@ export function EquityChart({ data, names, selected, onSelect, startingCash = 10
         {yTicks.map((t) => (
           <g key={t}>
             <line x1={PAD.left} x2={PAD.left + iw} y1={y(t)} y2={y(t)} className={t === 0 ? "grid zero" : "grid"} />
-            <text x={PAD.left - 8} y={y(t) + 4} className="axis" textAnchor="end">{fmtPct(t, 0)}</text>
+            <text x={PAD.left - 8} y={y(t) + 4} className="axis" textAnchor="end">{fmtPct(t, tickDigits)}</text>
           </g>
         ))}
         {xTicks.map((d) => (

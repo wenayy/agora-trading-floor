@@ -111,6 +111,7 @@ export interface Metric {
   trades: number;
   turnover: number;
   fees: number;
+  days: number;
 }
 
 export interface FloorEvent {

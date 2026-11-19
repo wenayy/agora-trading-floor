@@ -25,7 +25,10 @@ export function TraderPanel({ t, metric, benchmark }: { t: TraderDetail; metric?
         </div>
       </dl>
       <dl className="stats">
-        <div><dt>Sharpe</dt><dd className="num">{metric ? metric.sharpe.toFixed(2) : "–"}</dd></div>
+        <div title="Annualised, risk-free rate 0. Shown after 10 trading days, when it starts to mean something">
+          <dt>Sharpe</dt>
+          <dd className="num">{metric && metric.days >= 10 ? metric.sharpe.toFixed(2) : "–"}</dd>
+        </div>
         <div title="Largest peak-to-trough fall in equity"><dt>Drawdown</dt><dd className="num">{metric ? fmtPct(metric.max_drawdown) : "–"}</dd></div>
         <div><dt>Trades</dt><dd className="num">{metric?.trades ?? t.transactions.length}</dd></div>
         <div><dt>Cash</dt><dd className="num">{fmtWeight(t.equity ? t.cash / t.equity : 1)}</dd></div>
@@ -39,7 +42,7 @@ export function TraderPanel({ t, metric, benchmark }: { t: TraderDetail; metric?
               <span className="sym">{p.symbol}</span>
               <span className="bar" aria-hidden="true"><span style={{ width: `${Math.min(100, (p.weight / 0.3) * 100)}%` }} /></span>
               <span className="num">{fmtWeight(p.weight)}</span>
-              <span className={`num pnl ${tone(p.unrealized_pnl)}`}>{fmtMoney(p.unrealized_pnl)}</span>
+              <span className={`num pnl ${p.unrealized_pnl > 0.5 ? "up" : p.unrealized_pnl < -0.5 ? "down" : ""}`}>{fmtMoney(p.unrealized_pnl)}</span>
             </li>
           ))}
           <li className="holdings-foot">
